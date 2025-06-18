@@ -1,5 +1,8 @@
+import java.io.BufferedWriter;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
@@ -8,15 +11,13 @@ public class CuttingProblem {
         TreeMap<Integer, Integer> table = readFile();
         int bandLen = 99000; //mm
         System.out.println("Długość pasma: " + bandLen + " mm");
-        table.forEach((k, v) -> System.out.println(String.format("%-4s",v) + " elementów po " + k + " mm"));
-//        logMap(table);
+        table.forEach((k, v) -> System.out.println(String.format("%-4s", v) + " elementów po " + k + " mm"));
         int totalWaste = 0;
         Map<String, Integer> sets = new HashMap<>();
         while (!table.isEmpty()) {
             totalWaste += findOptimalSet(table, bandLen, sets);
         }
-        sets.forEach((set, noOfRepetitions) -> System.out.println("Wytnij zestaw: [" + set.substring(0, set.length() - 2) + "] " + noOfRepetitions + " razy"));
-        System.out.println("Suma zmarnowanego materiału: " + totalWaste + ", średnio " + totalWaste / sets.values().stream().reduce(Integer::sum).orElse(-1) + " na cięcie");
+        writeResults(sets, totalWaste);
     }
 
     private static int findOptimalSet(TreeMap<Integer, Integer> table, int bandLen, Map<String, Integer> sets) {
@@ -46,17 +47,13 @@ public class CuttingProblem {
         }
         putSet(sets, set);
         entriesToRemove.forEach(table::remove);
-//        logMap(table);
-
-//        System.out.println("SET: " + set + "waste: " + (bandLen - tempLen));
         return bandLen - tempLen;
     }
 
     private static void putSet(Map<String, Integer> sets, StringBuilder set) {
         if (sets.containsKey(set.toString())) {
             sets.put(set.toString(), sets.get(set.toString()) + 1);
-        }
-        else {
+        } else {
             sets.put(set.toString(), 1);
         }
     }
@@ -81,7 +78,19 @@ public class CuttingProblem {
         return table;
     }
 
-    private void writeResults(String output) {
-
+    private static void writeResults(Map<String, Integer> sets, int totalWaste) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(".\\src\\main\\resources\\output.csv", true))) {
+            String summary = "Suma zmarnowanego materiału: " + totalWaste + ", średnio " + totalWaste / sets.values().stream().reduce(Integer::sum).orElse(-1) + " na cięcie";
+            for (Map.Entry<String, Integer> set : sets.entrySet()) {
+                writer
+                        .append("Wytnij zestaw: [")
+                        .append(set.getKey().substring(0, set.getKey().length() - 2)).append("] ")
+                        .append(String.valueOf(set.getValue()))
+                        .append(" razy\n");
+            }
+            writer.append(summary);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -1,3 +1,7 @@
+package com.cutting_problem;
+
+import org.springframework.stereotype.Service;
+
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -5,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
 
+@Service
 public class CuttingProblemAlgorithm {
 
     private int bandLength;
